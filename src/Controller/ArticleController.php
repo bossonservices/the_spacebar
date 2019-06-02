@@ -3,15 +3,16 @@
 namespace App\Controller;
 
 use App\Services\MarkdownHelper;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Entity\Article;
 
 class ArticleController extends AbstractController
 {
-
-	/**
+    /**
 	 * @Route("/", name="app_homepage")
 	 */
 	public function homepage()
@@ -23,8 +24,16 @@ class ArticleController extends AbstractController
 	/**
 	 * @Route("/news/{slug}", name="article_show")
 	 */
-	public function show($slug, MarkdownHelper $markdownHelper)
+	public function show($slug, MarkdownHelper $markdownHelper, EntityManagerInterface $em)
 	{
+        $repository = $em->getRepository(Article::class);
+        /** @var Article $article */
+        $article = $repository->findOneBy(['slug' => $slug]);
+        if (!$article) {
+            throw $this->createNotFoundException(sprintf('No article for slug "%s"', $slug));
+        }
+
+        dump($article);die;
 
         $articleContent = <<<EOF
 Spicy **jalapeno bacon** ipsum dolor amet veniam shank in dolore. Ham hock nisi landjaeger cow,
