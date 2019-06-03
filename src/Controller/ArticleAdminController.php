@@ -19,6 +19,9 @@ class ArticleAdminController extends AbstractController
     {
         $article = new Article();
         $article->setTitle('Why Asteroids Taste Like Bacon')
+            ->setAuthor('Thibaut Bosson')
+            ->setHeartCount(rand(5, 100))
+            ->setImageFilename('asteroid.jpeg')
             ->setSlug('why-asteroids-taste-like-bacon-'.rand(100, 999))
         ->setContent(<<<EOF
 Spicy **jalapeno bacon** ipsum dolor amet veniam shank in dolore. Ham hock nisi landjaeger cow,

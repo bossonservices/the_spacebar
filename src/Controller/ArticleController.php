@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Services\MarkdownHelper;
+use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,51 +15,24 @@ class ArticleController extends AbstractController
     /**
 	 * @Route("/", name="app_homepage")
 	 */
-	public function homepage()
+	public function homepage(ArticleRepository $repository)
 	{
-		return $this->render('article/homepage.html.twig');
+	    $articles = $repository->findAllPublishedOrderedByNewest();
+		return $this->render('article/homepage.html.twig', [
+		    'articles' => $articles,
+        ]);
 
 	}
 
 	/**
 	 * @Route("/news/{slug}", name="article_show")
 	 */
-	public function show($slug, MarkdownHelper $markdownHelper, EntityManagerInterface $em)
+	public function show(Article $article)
 	{
-        $repository = $em->getRepository(Article::class);
-        /** @var Article $article */
-        $article = $repository->findOneBy(['slug' => $slug]);
-        if (!$article) {
-            throw $this->createNotFoundException(sprintf('No article for slug "%s"', $slug));
+	    if ($article->getSlug() === 'khaaaaan'){
+            echo "test";
         }
 
-        dump($article);die;
-
-        $articleContent = <<<EOF
-Spicy **jalapeno bacon** ipsum dolor amet veniam shank in dolore. Ham hock nisi landjaeger cow,
-lorem proident [beef ribs](https://baconipsum.com/) aute enim veniam ut cillum pork chuck picanha. Dolore reprehenderit
-labore minim pork belly spare ribs cupim short loin in. Elit exercitation eiusmod dolore cow
-**turkey** shank eu pork belly meatball non cupim.
-Laboris beef ribs fatback fugiat eiusmod jowl kielbasa alcatra dolore velit ea ball tip. Pariatur
-laboris sunt venison, et laborum dolore minim non meatball. Shankle eu flank aliqua shoulder,
-capicola biltong frankfurter boudin cupim officia. Exercitation fugiat consectetur ham. Adipisicing
-picanha shank et filet mignon pork belly ut ullamco. Irure velit turducken ground round doner incididunt
-occaecat lorem meatball prosciutto quis strip steak.
-Meatball adipisicing ribeye bacon strip steak eu. Consectetur ham hock pork hamburger enim strip steak
-mollit quis officia meatloaf tri-tip swine. Cow ut reprehenderit, buffalo incididunt in filet mignon
-strip steak pork belly aliquip capicola officia. Labore deserunt esse chicken lorem shoulder tail consectetur
-cow est ribeye adipisicing. Pig hamburger pork belly enim. Do porchetta minim capicola irure pancetta chuck
-fugiat.
-EOF;
-        $articleContent = $markdownHelper->parse($articleContent);
-
-//        $item = $cache->getItem('markdown_'.md5($articleContent));
-//        if (!$item->isHit())
-//        {
-//            $item->set($markdown->transform($articleContent));
-//            $cache->save($item);
-//        }
-//        $articleContent = $item->get();
 
 		$comments = [
 			'I ate a normal rock once. It did NOT taste like bacon!', 
@@ -69,21 +42,20 @@ EOF;
 
 
 		return $this->render('article/show.html.twig', [
-			'slug' => $slug,
+			'article' => $article,
 			'comments' => $comments,
-			'title' => ucwords(str_replace('-', ' ', $slug)),
-            'articleContent' => $articleContent,
 		]);
 	}
 	
 	/**
      	 * @Route("/news/{slug}/heart", name="article_toggle_heart", methods={"POST"})
          */
-    	public function toggleArticleHeart($slug, LoggerInterface $logger)
+    	public function toggleArticleHeart(Article $article, LoggerInterface $logger, EntityManagerInterface $em)
     	{
-		// TODO - actually heart/unheart the article!
+    	    $article->incrementHeartCount();
+    	    $em->flush();
 
             $logger->info('Article is being hearted!');
-		return new JsonResponse(['hearts' => rand(5, 100)]);
+		return new JsonResponse(['hearts' => $article->getHeartCount()]);
 	}	
 }
