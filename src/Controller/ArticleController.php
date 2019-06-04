@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\ArticleRepository;
+use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,17 +34,8 @@ class ArticleController extends AbstractController
             echo "test";
         }
 
-
-		$comments = [
-			'I ate a normal rock once. It did NOT taste like bacon!', 
-			'Woohoo! I\'m going on an all-asteroid diet!',
-			'I like bacon too! Buy some from my site! bakinsomebacon.com',
-		];
-
-
 		return $this->render('article/show.html.twig', [
 			'article' => $article,
-			'comments' => $comments,
 		]);
 	}
 	
